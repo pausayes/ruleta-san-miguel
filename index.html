@@ -14,15 +14,12 @@
       --ink:#111111;
       --cardShadow: 0 22px 60px rgba(0,0,0,.35);
 
-      /* ✅ tamaños para TODOS los celulares */
       --padV: clamp(10px, 2.2svh, 16px);
       --padH: clamp(12px, 3vw, 16px);
       --gap:  clamp(8px, 1.6svh, 12px);
-
-      /* alto reservado para el panel de abajo (compacto) */
       --panelH: clamp(86px, 12svh, 110px);
 
-      /* ✅ tamaño base de ruleta (8 premios) */
+      /* 8 segmentos visuales (emojis) */
       --wheelSize: clamp(285px, 50svh, 380px);
     }
 
@@ -40,7 +37,6 @@
       color: var(--ink);
     }
 
-    /* brillo/viñeta */
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -65,23 +61,17 @@
       opacity:.35;
     }
 
-    /* ✅ Grid estable: nunca se superpone */
     .screen{
       width: min(430px, 100vw);
       height: 100svh;
       padding: var(--padV) var(--padH);
       display:grid;
-      grid-template-rows:
-        auto
-        auto
-        1fr
-        var(--panelH);
+      grid-template-rows: auto auto 1fr var(--panelH);
       gap: var(--gap);
       overflow:hidden;
       position:relative;
     }
 
-    /* logo */
     .topLogo{
       display:flex;
       justify-content:center;
@@ -95,7 +85,6 @@
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
     }
 
-    /* cartel */
     .board{
       background: var(--white);
       border-radius: 18px;
@@ -143,7 +132,6 @@
       color: #d10a00;
     }
 
-    /* ruleta */
     .wheelArea{
       min-height: 0;
       display:flex;
@@ -242,14 +230,12 @@
       text-shadow: 0 2px 0 rgba(255,255,255,.55);
     }
 
-    /* panel abajo (reservado) */
     .dailySlot{
       height: var(--panelH);
       display:flex;
       align-items:center;
       justify-content:center;
     }
-
     .dailyLock{
       width: min(92vw, 360px);
       background: rgba(255,255,255,.90);
@@ -271,7 +257,6 @@
       transform: translateY(0);
       pointer-events:auto;
     }
-
     .dailyLock b{ color: var(--red); }
     .dailyLock small{ display:block; margin-top:4px; opacity:.85; font-weight:800; }
     .dailyLock .row{ margin-top: 8px; display:flex; justify-content:center; }
@@ -287,7 +272,6 @@
       border: 2px solid rgba(255,210,0,.85);
     }
 
-    /* overlay ganador */
     .overlay{
       position:fixed; inset:0;
       display:none;
@@ -371,7 +355,6 @@
       border: 2px solid rgba(255,210,0,.85);
     }
 
-    /* confeti */
     .confetti{
       position:fixed;
       inset:0;
@@ -445,19 +428,22 @@
   </div>
 
   <script>
-    // =========================================
-    // ✅ LISTA DE PREMIOS (8 premios) EDITÁS ACÁ
-    // =========================================
-    let prizes = [
-      "1 HELADO ROCKLET ♥",
-      "COCA COLA 1L",
-      "1 AGUA SABORIZADA 1L",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL"
+    // ============================================================
+    // ✅ PREMIOS REALES (probabilidades por peso)
+    // Más peso => sale más seguido. (Sin precios)
+    // Ajustá si querés.
+    // ============================================================
+    const PRIZE_POOL = [
+      { label: "1 HELADO MOGUL",   weight: 70 },
+      { label: "1 COCA COLA 1L",   weight: 15 },
+      { label: "1 HELADO ROCKLET", weight: 15 },
     ];
+
+    // ============================================================
+    // ✅ LO QUE SE VE EN LA RULETA (solo misterio)
+    // 8 segmentos visuales
+    // ============================================================
+    const WHEEL_SEGMENTS = ["❓","🎁","❓","🍀","❓","🎉","❓","⭐"];
 
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
@@ -477,7 +463,7 @@
     let rotation = 0;
     let spinning = false;
 
-    // 1 giro por día
+    // 1 giro por día (por dispositivo/navegador)
     const LS_LAST_SPIN_DAY = "sm_ruleta_last_spin_day";
     const LS_TODAY_PRIZE   = "sm_ruleta_today_prize";
 
@@ -543,6 +529,7 @@
       }
     }
 
+    // colores shell (rojo/amarillo/blanco)
     function segmentColor(i){
       const mod = i % 3;
       if(mod === 0) return "#e10600";
@@ -555,48 +542,30 @@
       return "#ffffff";
     }
 
-    // ✅ Mejor lectura: 2 líneas + tamaño dinámico + borde
+    // ✅ selección ponderada de premio real
+    function pickWeightedPrize(){
+      const total = PRIZE_POOL.reduce((s,p) => s + Math.max(0, p.weight || 0), 0);
+      let r = Math.random() * total;
+      for(const p of PRIZE_POOL){
+        r -= Math.max(0, p.weight || 0);
+        if(r <= 0) return p.label;
+      }
+      return PRIZE_POOL[PRIZE_POOL.length - 1].label;
+    }
+
+    // ✅ dibuja 8 segmentos con emojis
     function drawWheel(){
       const size = canvas.width;
       const r = size/2;
-
       ctx.clearRect(0,0,size,size);
 
-      if(prizes.length < 2){
-        ctx.fillStyle = "#111";
-        ctx.font = "900 30px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText("Cargá premios", r, r);
-        return;
-      }
-
-      const slice = (Math.PI * 2) / prizes.length;
-
-      function splitTwoLines(text, maxChars){
-        const clean = String(text).trim();
-        if(clean.length <= maxChars) return [clean];
-
-        const words = clean.split(/\s+/);
-        let line1 = "";
-        let line2 = "";
-        for(const w of words){
-          const test = (line1 ? line1 + " " : "") + w;
-          if(test.length <= maxChars){
-            line1 = test;
-          } else {
-            line2 = (line2 ? line2 + " " : "") + w;
-          }
-        }
-        if(!line1) line1 = clean.slice(0, maxChars);
-        if(line2.length > maxChars) line2 = line2.slice(0, maxChars - 1) + "…";
-        return [line1, line2].filter(Boolean);
-      }
+      const slice = (Math.PI * 2) / WHEEL_SEGMENTS.length;
 
       ctx.save();
       ctx.translate(r,r);
       ctx.rotate(rotation);
 
-      for(let i=0;i<prizes.length;i++){
+      for(let i=0;i<WHEEL_SEGMENTS.length;i++){
         const start = i*slice;
         const end = start + slice;
 
@@ -613,42 +582,24 @@
         ctx.lineWidth = 4;
         ctx.stroke();
 
+        // emoji centrado en el segmento
         ctx.save();
         ctx.rotate(start + slice/2);
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
 
-        const raw = prizes[i] || "";
-        const len = raw.length;
-
-        // 8 premios => se puede un poco más grande
-        let fontSize = 26;
-        if(len > 18) fontSize -= 2;
-        if(len > 28) fontSize -= 2;
-        if(len > 40) fontSize -= 2;
-        fontSize = Math.max(16, fontSize);
-
-        const lines = splitTwoLines(raw, 20);
-
+        const emoji = WHEEL_SEGMENTS[i];
+        const fontSize = 58; // grande y legible
+        ctx.font = `900 ${fontSize}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
         const fill = textColorFor(bg);
-        const stroke = (bg === "#ffffff") ? "rgba(0,0,0,.22)" : "rgba(0,0,0,.38)";
-        ctx.font = `1000 ${fontSize}px system-ui`;
-        ctx.lineWidth = Math.max(3, Math.floor(fontSize/6));
+        const stroke = (bg === "#ffffff") ? "rgba(0,0,0,.18)" : "rgba(0,0,0,.30)";
+        ctx.lineWidth = 6;
         ctx.strokeStyle = stroke;
         ctx.fillStyle = fill;
 
-        const textRadius = r - 34;
-
-        if(lines.length === 1){
-          ctx.strokeText(lines[0], textRadius, 0);
-          ctx.fillText(lines[0], textRadius, 0);
-        } else {
-          const lineGap = fontSize * 1.05;
-          ctx.strokeText(lines[0], textRadius, -lineGap/2);
-          ctx.fillText(lines[0], textRadius, -lineGap/2);
-          ctx.strokeText(lines[1], textRadius,  lineGap/2);
-          ctx.fillText(lines[1], textRadius,  lineGap/2);
-        }
+        const textRadius = r - 60;
+        ctx.strokeText(emoji, textRadius, 0);
+        ctx.fillText(emoji, textRadius, 0);
 
         ctx.restore();
       }
@@ -662,9 +613,6 @@
       ctx.stroke();
     }
 
-    function pickIndex(){
-      return Math.floor(Math.random() * prizes.length);
-    }
     function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
     function spin(){
@@ -673,10 +621,6 @@
         return;
       }
       if(spinning) return;
-      if(prizes.length < 2){
-        alert("Cargá al menos 2 premios en el código (lista prizes).");
-        return;
-      }
 
       spinning = true;
       centerSpin.disabled = true;
@@ -684,13 +628,14 @@
       const duration = 4200;
       const start = performance.now();
 
-      const index = pickIndex();
-      const slice = (Math.PI*2)/prizes.length;
+      // ✅ Elegimos un índice visual SOLO para donde cae la flecha (no define premio real)
+      const visualIndex = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
+      const slice = (Math.PI*2)/WHEEL_SEGMENTS.length;
 
       const target =
         (Math.PI*2) * 6 +
         (Math.PI*2) -
-        (index*slice + slice/2);
+        (visualIndex*slice + slice/2);
 
       const startRot = rotation;
       const delta = target - (startRot % (Math.PI*2));
@@ -705,7 +650,8 @@
         } else {
           spinning = false;
 
-          const prize = prizes[index];
+          // ✅ premio real al final
+          const prize = pickWeightedPrize();
           setSpunToday(prize);
 
           showWinner(prize, true);
