@@ -12,24 +12,24 @@
       --yellow:#ffd200;
       --white:#ffffff;
       --ink:#111111;
-      --shadow: 0 18px 45px rgba(0,0,0,.35);
       --cardShadow: 0 22px 60px rgba(0,0,0,.35);
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     html,body{ height:100%; }
+
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       display:flex;
       justify-content:center;
-      align-items:center;
+      align-items:stretch;
       background: radial-gradient(circle at 50% 12%, #ffeaa3 0%, #ffd14a 35%, #f7b600 70%, #d18200 100%);
-      overflow:hidden;
+      overflow:hidden; /* ✅ no scroll global */
       color: var(--ink);
     }
 
-    /* brillo/viñeta (sin confeti fijo) */
+    /* brillo/viñeta */
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -54,27 +54,27 @@
       opacity:.35;
     }
 
-    /* ✅ Responsive phone canvas */
+    /* ✅ GRID: logo / cartel / ruleta / panel (sin saltos) */
     .screen{
       width: min(430px, 100vw);
-      height: 100vh;
-      max-height: 100svh;
-      padding: clamp(12px, 2.6vh, 18px) clamp(12px, 3vw, 16px);
-      display:flex;
-      flex-direction:column;
-      gap: clamp(10px, 1.8vh, 14px);
+      height: 100svh;
+      padding: clamp(10px, 2.2vh, 16px) clamp(12px, 3vw, 16px);
+      display:grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: clamp(8px, 1.5vh, 12px);
       position:relative;
+      overflow:hidden; /* ✅ sin scroll */
     }
 
     /* logo */
     .topLogo{
       display:flex;
-      flex-direction:column;
+      justify-content:center;
       align-items:center;
-      text-align:center;
+      padding-top: 2px;
     }
     .topLogo img{
-      width: clamp(85px, 18vw, 120px);
+      width: clamp(80px, 18vw, 120px);
       height:auto;
       display:block;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
@@ -84,7 +84,7 @@
     .board{
       background: var(--white);
       border-radius: 18px;
-      padding: clamp(12px, 2.2vh, 16px) 14px;
+      padding: clamp(10px, 2.0vh, 16px) 14px;
       box-shadow: var(--cardShadow);
       position:relative;
       overflow:hidden;
@@ -99,7 +99,7 @@
     }
     .board h1{
       margin: 2px 0 0;
-      font-size: clamp(34px, 6.2vw, 44px);
+      font-size: clamp(32px, 6.0vw, 44px);
       line-height: 1;
       letter-spacing: .5px;
       font-weight: 1000;
@@ -115,7 +115,7 @@
       padding: 8px 14px;
       border-radius: 8px;
       font-weight: 1000;
-      font-size: clamp(20px, 4.5vw, 26px);
+      font-size: clamp(18px, 4.2vw, 26px);
       letter-spacing:.4px;
       transform: skewX(-6deg);
       box-shadow: 0 10px 18px rgba(0,0,0,.12);
@@ -123,57 +123,55 @@
     .board .sub{
       margin: 2px 0 0;
       text-align:center;
-      font-size: clamp(14px, 3.6vw, 18px);
+      font-size: clamp(13px, 3.4vw, 18px);
       font-weight: 900;
       color: #d10a00;
     }
 
     /* rueda */
     .wheelArea{
-      flex: 1;
-      min-height: 0; /* important for flex scaling */
+      min-height: 0;
       display:flex;
       flex-direction:column;
       align-items:center;
-      justify-content:center;
+      justify-content:center; /* ✅ queda centrado en su fila */
       gap: 10px;
       position:relative;
-      padding-top: 2px;
     }
 
     .pointer{
       width:0;height:0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 36px solid var(--yellow);
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-bottom: 32px solid var(--yellow);
       filter: drop-shadow(0 12px 20px rgba(0,0,0,.35));
       position:relative;
-      margin-bottom: -10px;
-      z-index:5;
+      z-index:8;
+      margin-bottom: -6px;
     }
     .pointer::after{
       content:"";
       position:absolute;
-      left:-16px; top:8px;
-      width:0; height:0;
-      border-left:16px solid transparent;
-      border-right:16px solid transparent;
-      border-bottom: 28px solid var(--red);
-      transform: translateY(-2px) scale(.86);
+      left:-14px; top:7px;
+      border-left:14px solid transparent;
+      border-right:14px solid transparent;
+      border-bottom: 24px solid var(--red);
       opacity:.9;
     }
 
+    /* ✅ clave: la ruleta se adapta al alto disponible de su fila */
     .wheelWrap{
-      width: min(92vw, 360px);
+      height: min(360px, 100%);     /* toma el alto de la fila */
+      width: min(360px, 88vw);      /* y no excede el ancho */
       aspect-ratio: 1/1;
       position:relative;
       filter: drop-shadow(0 22px 40px rgba(0,0,0,.28));
     }
-    @media (max-height: 740px){
-      .wheelWrap{ width: min(88vw, 320px); }
+    @media (max-height: 700px){
+      .wheelWrap{ height:min(330px, 100%); width:min(330px, 86vw); }
     }
-    @media (max-height: 680px){
-      .wheelWrap{ width: min(84vw, 290px); }
+    @media (max-height: 620px){
+      .wheelWrap{ height:min(300px, 100%); width:min(300px, 84vw); }
     }
 
     .ring{
@@ -206,21 +204,19 @@
       background: transparent;
     }
 
-    /* ✅ Centro clickeable: el ÚNICO botón para girar */
+    /* botón centro */
     .centerButton{
       position:absolute;
       left:50%; top:50%;
       transform: translate(-50%,-50%);
-      width: clamp(120px, 32vw, 150px);
-      height: clamp(120px, 32vw, 150px);
+      width: clamp(112px, 30vw, 150px);
+      height: clamp(112px, 30vw, 150px);
       border-radius:50%;
       background: radial-gradient(circle at 35% 30%, #ffffff 0%, #fff1c6 35%, #ffe06b 62%, #ffcf2b 85%);
       box-shadow: 0 14px 28px rgba(0,0,0,.22), inset 0 0 0 10px rgba(255,210,0,.85);
       display:flex;
-      flex-direction:column;
       align-items:center;
       justify-content:center;
-      text-align:center;
       z-index: 10;
       border: 0;
       cursor: pointer;
@@ -228,21 +224,63 @@
     }
     .centerButton:active{ transform: translate(-50%,-50%) scale(.99); }
     .centerButton:disabled{ opacity:.65; cursor:not-allowed; }
-
-    .centerButton .small{
-      font-weight: 1000;
-      font-size: 14px;
-      color: rgba(0,0,0,.65);
-      letter-spacing:.2px;
-      margin-bottom: 2px;
-    }
     .centerButton .big{
       font-weight: 1000;
-      font-size: 34px;
+      font-size: clamp(28px, 6.5vw, 34px);
       color: var(--red);
       letter-spacing:.6px;
       line-height:1;
       text-shadow: 0 2px 0 rgba(255,255,255,.55);
+    }
+
+    /* ✅ panel inferior: SIEMPRE ocupa espacio, nunca mueve el layout */
+    .dailySlot{
+      height: 128px; /* reservado fijo => sin saltos */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .dailyLock{
+      width: min(92vw, 360px);
+      background: rgba(255,255,255,.90);
+      border: 2px solid rgba(255,210,0,.85);
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align:center;
+      box-shadow: 0 12px 24px rgba(0,0,0,.15);
+
+      /* oculto sin colapsar */
+      visibility:hidden;
+      opacity:0;
+      transform: translateY(8px);
+      pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+    }
+    .dailyLock.show{
+      visibility:visible;
+      opacity:1;
+      transform: translateY(0);
+      pointer-events:auto;
+    }
+
+    .dailyLock b{ color: var(--red); }
+    .dailyLock small{ display:block; margin-top:4px; opacity:.85; font-weight:800; }
+    .dailyLock .row{
+      margin-top: 8px;
+      display:flex;
+      justify-content:center;
+    }
+    .dailyLock .viewBtn{
+      border:0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 1000;
+      cursor:pointer;
+      box-shadow: 0 12px 22px rgba(0,0,0,.16);
+      background: linear-gradient(180deg, var(--red) 0%, #b40000 100%);
+      color: var(--yellow);
+      border: 2px solid rgba(255,210,0,.85);
     }
 
     /* overlay ganador */
@@ -352,9 +390,6 @@
         opacity:0;
       }
     }
-
-    /* pequeño footer invisibilizado (espacio) */
-    .spacer{ height: 2px; }
   </style>
 </head>
 
@@ -381,15 +416,23 @@
         <div class="bulbs"></div>
         <canvas id="wheel" width="700" height="700"></canvas>
 
-        <!-- ✅ ÚNICO control: botón del medio -->
         <button id="centerSpin" class="centerButton" type="button" aria-label="Girar ruleta">
-        
           <div class="big">GIRAR</div>
         </button>
       </div>
     </div>
 
-    <div class="spacer"></div>
+    <!-- ✅ espacio reservado SIEMPRE -->
+    <div class="dailySlot">
+      <div id="dailyLock" class="dailyLock">
+        <b>Ya participaste hoy ✅</b>
+        <small>Volvé en <span id="countdown">--:--:--</span></small>
+        <div class="row">
+          <button id="viewTodayPrize" class="viewBtn" type="button">Ver mi premio de hoy</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Confeti -->
@@ -411,9 +454,7 @@
     // =========================================
     // ✅ LISTA DE PREMIOS (EDITÁS ACÁ)
     // =========================================
-    // Tip: si repetís un premio, sale más seguido.
     let prizes = [
-    
       "AGUA/ AGUA SABORIZADA 1L",
       "COCA COLA 1L",
       "2x1 HELADOS COFLER",
@@ -426,7 +467,6 @@
       "1 HELADO MOGUL",
       "1 HELADO MOGUL",
       "1 HELADO MOGUL"
-      
     ];
 
     const canvas = document.getElementById("wheel");
@@ -440,12 +480,83 @@
     const exitBtn = document.getElementById("exitBtn");
 
     const confettiBox = document.getElementById("confettiBox");
+    const dailyLock = document.getElementById("dailyLock");
+    const countdownEl = document.getElementById("countdown");
+    const viewTodayPrizeBtn = document.getElementById("viewTodayPrize");
 
     let rotation = 0;
     let spinning = false;
 
+    // 1 giro por día
+    const LS_LAST_SPIN_DAY = "sm_ruleta_last_spin_day";
+    const LS_TODAY_PRIZE   = "sm_ruleta_today_prize";
+
+    function todayKey(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
+    function hasSpunToday(){
+      return localStorage.getItem(LS_LAST_SPIN_DAY) === todayKey();
+    }
+    function setSpunToday(prize){
+      localStorage.setItem(LS_LAST_SPIN_DAY, todayKey());
+      localStorage.setItem(LS_TODAY_PRIZE, prize);
+    }
+
+    function msToHMS(ms){
+      const total = Math.max(0, Math.floor(ms/1000));
+      const h = String(Math.floor(total/3600)).padStart(2,"0");
+      const m = String(Math.floor((total%3600)/60)).padStart(2,"0");
+      const s = String(total%60).padStart(2,"0");
+      return `${h}:${m}:${s}`;
+    }
+    function msUntilMidnight(){
+      const now = new Date();
+      const next = new Date(now);
+      next.setHours(24,0,0,0);
+      return next - now;
+    }
+
+    let countdownTimer = null;
+    function startCountdown(){
+      stopCountdown();
+      const tick = () => {
+        if(!hasSpunToday()){
+          applyDailyLockUI();
+          return;
+        }
+        countdownEl.textContent = msToHMS(msUntilMidnight());
+      };
+      tick();
+      countdownTimer = setInterval(tick, 1000);
+    }
+    function stopCountdown(){
+      if(countdownTimer){
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+    }
+
+    function applyDailyLockUI(){
+      if(hasSpunToday()){
+        centerSpin.disabled = true;
+        dailyLock.classList.add("show");
+        startCountdown();
+
+        const p = localStorage.getItem(LS_TODAY_PRIZE);
+        viewTodayPrizeBtn.disabled = !p;
+        viewTodayPrizeBtn.style.opacity = p ? "1" : ".55";
+      } else {
+        centerSpin.disabled = false;
+        dailyLock.classList.remove("show");
+        stopCountdown();
+      }
+    }
+
     function segmentColor(i){
-      // rojo / amarillo / blanco
       const mod = i % 3;
       if(mod === 0) return "#e10600";
       if(mod === 1) return "#ffd200";
@@ -460,7 +571,6 @@
     function drawWheel(){
       const size = canvas.width;
       const r = size/2;
-
       ctx.clearRect(0,0,size,size);
 
       if(prizes.length < 2){
@@ -520,6 +630,10 @@
     function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
     function spin(){
+      if(hasSpunToday()){
+        applyDailyLockUI();
+        return;
+      }
       if(spinning) return;
       if(prizes.length < 2){
         alert("Cargá al menos 2 premios en el código (lista prizes).");
@@ -552,20 +666,22 @@
           requestAnimationFrame(frame);
         } else {
           spinning = false;
-          centerSpin.disabled = false;
 
           const prize = prizes[index];
-          showWinner(prize);
+          setSpunToday(prize);
+
+          showWinner(prize, true);
+          applyDailyLockUI();
         }
       }
 
       requestAnimationFrame(frame);
     }
 
-    function showWinner(prize){
+    function showWinner(prize, celebrate){
       winPrize.textContent = prize;
       overlay.classList.add("show");
-      launchConfetti(); // ✅ solo acá
+      if(celebrate) launchConfetti();
     }
     function closeWinner(){
       overlay.classList.remove("show");
@@ -590,10 +706,14 @@
       setTimeout(()=>{ confettiBox.innerHTML = ""; }, 2100);
     }
 
-    // ✅ eventos
+    // eventos
     centerSpin.addEventListener("click", spin);
 
-    // por si tocás el overlay afuera, cierra
+    viewTodayPrizeBtn.addEventListener("click", () => {
+      const p = localStorage.getItem(LS_TODAY_PRIZE);
+      if(p) showWinner(p, false); // sin confeti
+    });
+
     overlay.addEventListener("click", (e) => {
       if(e.target === overlay) closeWinner();
     });
@@ -602,6 +722,7 @@
 
     // init
     drawWheel();
+    applyDailyLockUI();
   </script>
 </body>
 </html>
