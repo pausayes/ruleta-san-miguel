@@ -22,8 +22,8 @@
       /* alto reservado para el panel de abajo (compacto) */
       --panelH: clamp(86px, 12svh, 110px);
 
-      /* ✅ tamaño base de ruleta: se calcula con alto disponible */
-      --wheelSize: clamp(260px, 46svh, 360px);
+      /* ✅ tamaño base de ruleta (8 premios) */
+      --wheelSize: clamp(285px, 50svh, 380px);
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
@@ -36,7 +36,7 @@
       justify-content:center;
       align-items:stretch;
       background: radial-gradient(circle at 50% 12%, #ffeaa3 0%, #ffd14a 35%, #f7b600 70%, #d18200 100%);
-      overflow:hidden; /* sin scroll */
+      overflow:hidden;
       color: var(--ink);
     }
 
@@ -72,10 +72,10 @@
       padding: var(--padV) var(--padH);
       display:grid;
       grid-template-rows:
-        auto         /* logo */
-        auto         /* cartel */
-        1fr          /* ruleta */
-        var(--panelH); /* panel abajo reservado */
+        auto
+        auto
+        1fr
+        var(--panelH);
       gap: var(--gap);
       overflow:hidden;
       position:relative;
@@ -162,7 +162,7 @@
       filter: drop-shadow(0 12px 20px rgba(0,0,0,.35));
       position:relative;
       z-index:8;
-      margin-bottom: 2px; /* ✅ no pisa el texto */
+      margin-bottom: 2px;
     }
     .pointer::after{
       content:"";
@@ -174,7 +174,6 @@
       opacity:.9;
     }
 
-    /* ✅ tamaño pro: usa el espacio libre */
     .wheelWrap{
       width: var(--wheelSize);
       height: var(--wheelSize);
@@ -446,18 +445,18 @@
   </div>
 
   <script>
-    // ✅ premios editables
+    // =========================================
+    // ✅ LISTA DE PREMIOS (8 premios) EDITÁS ACÁ
+    // =========================================
     let prizes = [
-      "AGUA/ AGUA SABORIZADA 1L",
+      "AGUA SABORIZADA 1L",
       "COCA COLA 1L",
       "2x1 HELADOS COFLER",
       "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL",
-      "1 HELADO MOGUL"
+      "10% DESCUENTO SHOP",
+      "CAFÉ CHICO",
+      "PACK GALLETITAS",
+      "REGALO SORPRESA"
     ];
 
     const canvas = document.getElementById("wheel");
@@ -556,6 +555,7 @@
       return "#ffffff";
     }
 
+    // ✅ Mejor lectura: 2 líneas + tamaño dinámico + borde
     function drawWheel(){
       const size = canvas.width;
       const r = size/2;
@@ -571,6 +571,26 @@
       }
 
       const slice = (Math.PI * 2) / prizes.length;
+
+      function splitTwoLines(text, maxChars){
+        const clean = String(text).trim();
+        if(clean.length <= maxChars) return [clean];
+
+        const words = clean.split(/\s+/);
+        let line1 = "";
+        let line2 = "";
+        for(const w of words){
+          const test = (line1 ? line1 + " " : "") + w;
+          if(test.length <= maxChars){
+            line1 = test;
+          } else {
+            line2 = (line2 ? line2 + " " : "") + w;
+          }
+        }
+        if(!line1) line1 = clean.slice(0, maxChars);
+        if(line2.length > maxChars) line2 = line2.slice(0, maxChars - 1) + "…";
+        return [line1, line2].filter(Boolean);
+      }
 
       ctx.save();
       ctx.translate(r,r);
@@ -596,11 +616,40 @@
         ctx.save();
         ctx.rotate(start + slice/2);
         ctx.textAlign = "right";
-        ctx.fillStyle = textColorFor(bg);
-        ctx.font = "1000 22px system-ui";
+        ctx.textBaseline = "middle";
 
-        const label = prizes[i].length > 20 ? prizes[i].slice(0,20) + "…" : prizes[i];
-        ctx.fillText(label, r-28, 8);
+        const raw = prizes[i] || "";
+        const len = raw.length;
+
+        // 8 premios => se puede un poco más grande
+        let fontSize = 26;
+        if(len > 18) fontSize -= 2;
+        if(len > 28) fontSize -= 2;
+        if(len > 40) fontSize -= 2;
+        fontSize = Math.max(16, fontSize);
+
+        const lines = splitTwoLines(raw, 20);
+
+        const fill = textColorFor(bg);
+        const stroke = (bg === "#ffffff") ? "rgba(0,0,0,.22)" : "rgba(0,0,0,.38)";
+        ctx.font = `1000 ${fontSize}px system-ui`;
+        ctx.lineWidth = Math.max(3, Math.floor(fontSize/6));
+        ctx.strokeStyle = stroke;
+        ctx.fillStyle = fill;
+
+        const textRadius = r - 34;
+
+        if(lines.length === 1){
+          ctx.strokeText(lines[0], textRadius, 0);
+          ctx.fillText(lines[0], textRadius, 0);
+        } else {
+          const lineGap = fontSize * 1.05;
+          ctx.strokeText(lines[0], textRadius, -lineGap/2);
+          ctx.fillText(lines[0], textRadius, -lineGap/2);
+          ctx.strokeText(lines[1], textRadius,  lineGap/2);
+          ctx.fillText(lines[1], textRadius,  lineGap/2);
+        }
+
         ctx.restore();
       }
 
@@ -712,3 +761,4 @@
   </script>
 </body>
 </html>
+
