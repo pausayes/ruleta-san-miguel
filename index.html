@@ -19,7 +19,6 @@
       --gap:  clamp(8px, 1.6svh, 12px);
       --panelH: clamp(86px, 12svh, 110px);
 
-      /* 8 segmentos visuales (emojis) */
       --wheelSize: clamp(285px, 50svh, 380px);
     }
 
@@ -162,70 +161,61 @@
       opacity:.9;
     }
 
-/* ✅ PERFECTO en TODOS los celulares (misma proporción para aro/luces/cara) */
-.wheelWrap{
-  width: min(92vw, var(--wheelSize));
-  height: min(92vw, var(--wheelSize));   /* fuerza cuadrado real */
-  max-height: 52svh;
-  max-width: 92vw;
-  position: relative;
-  border-radius: 50%;
-  overflow: hidden;                      /* ✅ recorta TODO al mismo círculo */
-  filter: drop-shadow(0 22px 40px rgba(0,0,0,.28));
-}
+    /* ✅ FIX PROPORCIÓN: cara grande + aro/luces en su lugar */
+    .wheelWrap{
+      width: min(92vw, var(--wheelSize));
+      height: min(92vw, var(--wheelSize));
+      max-height: 52svh;
+      max-width: 92vw;
+      position: relative;
+      border-radius: 50%;
+      overflow: visible;
+      filter: drop-shadow(0 22px 40px rgba(0,0,0,.28));
 
-/* fallback por si un navegador no soporta svh */
-@supports not (height: 1svh){
-  .wheelWrap{ max-height: 52vh; }
-}
+      /* afinado premium */
+      --rim: 10px;
+      --bulbInset: 8px;
+      --faceInset: 4px; /* ✅ canvas casi al borde = cara grande */
+    }
+    @supports not (height: 1svh){
+      .wheelWrap{ max-height: 52vh; }
+    }
 
-/* Ajuste fino (estos 3 valores dejan “premium” perfecto) */
-.wheelWrap{
-  --rim: 12px;     /* grosor aro dorado */
-  --bulbInset: 8px;/* luces un poquito adentro */
-  --faceInset: 10px;/* cara (canvas) casi al borde */
-}
+    .ring{
+      position:absolute; inset:0;
+      border-radius:50%;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 62%, rgba(0,0,0,.10) 63%, rgba(0,0,0,0) 68%),
+        radial-gradient(circle at 50% 50%, rgba(255,210,0,0) 68%, rgba(255,210,0,.90) 69%, rgba(255,210,0,.90) 74%, rgba(0,0,0,0) 75%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.95) 0 61%, rgba(255,255,255,0) 62%);
+      box-shadow: inset 0 0 0 var(--rim) rgba(255,210,0,.40);
+    }
 
-/* aro dorado */
-.ring{
-  position:absolute; inset:0;
-  border-radius:50%;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 57%, rgba(0,0,0,.12) 58%, rgba(0,0,0,0) 64%),
-    radial-gradient(circle at 50% 50%, rgba(255,210,0,0) 64%, rgba(255,210,0,.90) 65%, rgba(255,210,0,.90) 70%, rgba(0,0,0,0) 71%),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,.95) 0 56%, rgba(255,255,255,0) 57%);
-  box-shadow: inset 0 0 0 var(--rim) rgba(255,210,0,.42);
-}
+    .bulbs{
+      position:absolute;
+      inset: var(--bulbInset);
+      border-radius:50%;
+      pointer-events:none;
+      background:
+        repeating-conic-gradient(from 0deg,
+          rgba(255,255,255,.90) 0 6deg,
+          rgba(255,255,255,0) 6deg 18deg
+        );
+      mix-blend-mode: soft-light;
+      opacity:.58;
+      filter: blur(.2px);
+    }
 
-/* luces */
-.bulbs{
-  position:absolute;
-  inset: var(--bulbInset);
-  border-radius:50%;
-  pointer-events:none;
-  background:
-    repeating-conic-gradient(from 0deg,
-      rgba(255,255,255,.90) 0 6deg,
-      rgba(255,255,255,0) 6deg 18deg
-    );
-  mix-blend-mode: soft-light;
-  opacity:.65;
-  filter: blur(.2px);
-}
-
-/* cara/segmentos */
-canvas{
-  position:absolute;
-  inset: var(--faceInset);
-  width: calc(100% - (var(--faceInset) * 2));
-  height: calc(100% - (var(--faceInset) * 2));
-  border-radius: 50%;
-  display:block;
-  background: transparent;
-}
-
-
+    canvas{
+      position:absolute;
+      inset: var(--faceInset);
+      width: calc(100% - (var(--faceInset) * 2));
+      height: calc(100% - (var(--faceInset) * 2));
+      border-radius: 50%;
+      display:block;
+      background: transparent;
+    }
 
     .centerButton{
       position:absolute;
@@ -243,6 +233,7 @@ canvas{
       border: 0;
       cursor: pointer;
       user-select:none;
+      touch-action: manipulation;
     }
     .centerButton:active{ transform: translate(-50%,-50%) scale(.99); }
     .centerButton:disabled{ opacity:.65; cursor:not-allowed; }
@@ -416,10 +407,10 @@ canvas{
     <div class="wheelArea">
       <div class="pointer" aria-hidden="true"></div>
 
-      <div class="wheelWrap">
+      <div class="wheelWrap" id="wheelWrap">
         <div class="ring"></div>
         <div class="bulbs"></div>
-        <canvas id="wheel" width="700" height="700"></canvas>
+        <canvas id="wheel"></canvas>
 
         <button id="centerSpin" class="centerButton" type="button" aria-label="Girar ruleta">
           <div class="big">GIRAR</div>
@@ -454,7 +445,7 @@ canvas{
 
   <script>
     // ============================================================
-    // ✅ PREMIOS REALES (MOGUL 8/10)
+    // ✅ PREMIOS REALES (ponderado)
     // ============================================================
     const PRIZE_POOL = [
       { label: "1 HELADO MOGUL",   weight: 34 },
@@ -467,6 +458,7 @@ canvas{
     // ============================================================
     const WHEEL_SEGMENTS = ["❓","🎁","❓","🍀","❓","🎉","❓","⭐"];
 
+    const wheelWrap = document.getElementById("wheelWrap");
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
 
@@ -551,6 +543,19 @@ canvas{
       }
     }
 
+    // ✅ canvas se adapta al tamaño real (evita “deformaciones” y queda nítido)
+    function resizeCanvas(){
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width  = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+
+      // dibujamos en "px CSS"
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawWheel();
+    }
+
     // colores shell (rojo/amarillo/blanco)
     function segmentColor(i){
       const mod = i % 3;
@@ -575,10 +580,11 @@ canvas{
       return PRIZE_POOL[PRIZE_POOL.length - 1].label;
     }
 
-    // dibuja ruleta 8 segmentos con emojis
+    // ✅ dibuja ruleta 8 segmentos con emojis (SIN achicar de más)
     function drawWheel(){
-      const size = canvas.width;
-      const r = size/2;
+      const size = canvas.getBoundingClientRect().width; // px CSS
+      const r = size / 2;
+
       ctx.clearRect(0,0,size,size);
 
       const slice = (Math.PI * 2) / WHEEL_SEGMENTS.length;
@@ -593,7 +599,10 @@ canvas{
 
         ctx.beginPath();
         ctx.moveTo(0,0);
-        ctx.arc(0,0,r-10,start,end);
+
+        // ✅ antes era r-10 (achicaba de más). Ahora casi lleno.
+        const outer = r - 2;
+        ctx.arc(0,0,outer,start,end);
         ctx.closePath();
 
         const bg = segmentColor(i);
@@ -604,21 +613,23 @@ canvas{
         ctx.lineWidth = 4;
         ctx.stroke();
 
+        // emoji
         ctx.save();
         ctx.rotate(start + slice/2);
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
 
         const emoji = WHEEL_SEGMENTS[i];
-        const fontSize = 58;
+        const fontSize = Math.max(44, Math.min(58, size * 0.12));
         ctx.font = `900 ${fontSize}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
+
         const fill = textColorFor(bg);
-        const stroke = (bg === "#ffffff") ? "rgba(0,0,0,.18)" : "rgba(0,0,0,.30)";
+        const stroke = (bg === "#ffffff") ? "rgba(0,0,0,.18)" : "rgba(0,0,0,.28)";
         ctx.lineWidth = 6;
         ctx.strokeStyle = stroke;
         ctx.fillStyle = fill;
 
-        const textRadius = r - 60;
+        const textRadius = r - Math.max(52, size * 0.12);
         ctx.strokeText(emoji, textRadius, 0);
         ctx.fillText(emoji, textRadius, 0);
 
@@ -627,10 +638,11 @@ canvas{
 
       ctx.restore();
 
+      // borde suave exterior de la cara
       ctx.beginPath();
-      ctx.arc(r, r, r-18, 0, Math.PI*2);
-      ctx.strokeStyle = "rgba(255,210,0,.55)";
-      ctx.lineWidth = 8;
+      ctx.arc(r, r, r-4, 0, Math.PI*2);
+      ctx.strokeStyle = "rgba(255,210,0,.35)";
+      ctx.lineWidth = 6;
       ctx.stroke();
     }
 
@@ -721,11 +733,15 @@ canvas{
     backBtn.addEventListener("click", closeWinner);
     exitBtn.addEventListener("click", closeWinner);
 
-    drawWheel();
-    applyDailyLockUI();
+    // init
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("orientationchange", resizeCanvas);
+
+    // al cargar
+    requestAnimationFrame(() => {
+      resizeCanvas();
+      applyDailyLockUI();
+    });
   </script>
 </body>
 </html>
-
-
-
