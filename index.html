@@ -58,3 +58,386 @@
       grid-template-rows: auto auto 1fr var(--panelH);
       gap: var(--gap);
       overflow:hidden;
+      position:relative;
+    }
+
+    .topLogo{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding-top: 2px;
+    }
+    .topLogo img{
+      width: clamp(78px, 18vw, 120px);
+      height:auto;
+      display:block;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+    }
+
+    .board{
+      background: var(--white);
+      border-radius: 18px;
+      padding: clamp(10px, 2.0svh, 16px) 14px;
+      box-shadow: var(--cardShadow);
+      position:relative;
+      overflow:hidden;
+      border: 2px solid rgba(255,210,0,.55);
+    }
+    .board::before{
+      content:"";
+      position:absolute; inset: 8px;
+      border-radius: 14px;
+      border: 2px solid rgba(255,210,0,.65);
+      pointer-events:none;
+    }
+    .board h1{
+      margin: 2px 0 0;
+      font-size: clamp(32px, 6.0vw, 44px);
+      line-height: 1;
+      letter-spacing: .5px;
+      font-weight: 1000;
+      color: var(--red);
+      text-align:center;
+    }
+    .board .tagWrap{ text-align:center; }
+    .board .tag{
+      margin: 6px auto 10px;
+      display:inline-block;
+      background: var(--yellow);
+      color: var(--red2);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 1000;
+      font-size: clamp(18px, 4.2vw, 26px);
+      letter-spacing:.4px;
+      transform: skewX(-6deg);
+      box-shadow: 0 10px 18px rgba(0,0,0,.12);
+    }
+    .board .sub{
+      margin: 2px 0 0;
+      text-align:center;
+      font-size: clamp(13px, 3.4vw, 18px);
+      font-weight: 900;
+      color: #d10a00;
+    }
+
+    .wheelArea{
+      min-height: 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      position:relative;
+    }
+
+    .pointer{
+      width:0;height:0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-bottom: 32px solid var(--yellow);
+      filter: drop-shadow(0 12px 20px rgba(0,0,0,.35));
+      position:relative;
+      z-index:8;
+      margin-bottom: 2px;
+    }
+
+    /* ✅ FIX TOTAL: SIEMPRE REDONDA */
+    .wheelWrap{
+      width: min(92vw, var(--wheelSize));
+      aspect-ratio: 1 / 1;
+      height: auto;          /* ✅ clave */
+      max-height: 100%;
+      position:relative;
+      filter: drop-shadow(0 22px 40px rgba(0,0,0,.28));
+    }
+
+    canvas{
+      position:absolute; inset: 18px;
+      width: calc(100% - 36px);
+      height: calc(100% - 36px);
+      border-radius: 50%;
+    }
+
+    /* ✅ Botón central premium */
+    .centerButton{
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      width: clamp(110px, 30vw, 150px);
+      height: clamp(110px, 30vw, 150px);
+      border-radius:50%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #fff1c6 35%, #ffe06b 62%, #ffcf2b 85%);
+      box-shadow: 0 14px 28px rgba(0,0,0,.22), inset 0 0 0 10px rgba(255,210,0,.85);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index: 10;
+      border: 0;
+      cursor: pointer;
+      user-select:none;
+    }
+
+    .centerButton .big{
+      font-weight: 1000;
+      font-size: clamp(28px, 6.5vw, 34px);
+      color: var(--red);
+      letter-spacing:.6px;
+    }
+
+    /* ✅ TODO lo demás igual (dailyLock, overlay, confetti, etc.) */
+    .dailySlot{
+      height: var(--panelH);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .dailyLock{
+      width: min(92vw, 360px);
+      background: rgba(255,255,255,.90);
+      border: 2px solid rgba(255,210,0,.85);
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align:center;
+      box-shadow: 0 12px 24px rgba(0,0,0,.15);
+      visibility:hidden;
+      opacity:0;
+      transform: translateY(8px);
+      pointer-events:none;
+    }
+    .dailyLock.show{
+      visibility:visible;
+      opacity:1;
+      transform: translateY(0);
+      pointer-events:auto;
+    }
+
+    .overlay{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.45);
+      z-index:50;
+    }
+    .overlay.show{ display:flex; }
+
+    .winCard{
+      width: min(430px, 96vw);
+      border-radius: 18px;
+      background: white;
+      padding: 18px;
+      text-align:center;
+    }
+
+    .prizePill{
+      margin: 10px auto;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: var(--red);
+      color:white;
+      font-weight:1000;
+      font-size:22px;
+    }
+
+    .confetti{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:999;
+    }
+    .confetti span{
+      position:absolute;
+      top:-24px;
+      border-radius:2px;
+      animation: fall 1.8s linear forwards;
+    }
+    @keyframes fall{
+      to{ transform: translateY(110vh) rotate(420deg); opacity:0; }
+    }
+
+  </style>
+</head>
+
+<body>
+<div class="screen">
+
+  <div class="topLogo">
+    <img src="logo.png" alt="San Miguel SRL">
+  </div>
+
+  <div class="board">
+    <h1>RULETA</h1>
+    <div class="tagWrap"><div class="tag">SAN MIGUEL</div></div>
+    <div class="sub">¡Con tu carga de +35L de V-POWER girá y descubrí tu premio!</div>
+  </div>
+
+  <div class="wheelArea">
+    <div class="pointer"></div>
+
+    <div class="wheelWrap">
+      <canvas id="wheel" width="700" height="700"></canvas>
+
+      <button id="centerSpin" class="centerButton">
+        <div class="big">GIRAR</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="dailySlot">
+    <div id="dailyLock" class="dailyLock">
+      <b>Ya participaste hoy ✅</b><br>
+      Volvé en <span id="countdown">--:--:--</span><br>
+      <button id="viewTodayPrize">Ver mi premio de hoy</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="confettiBox" class="confetti"></div>
+
+<div id="overlay" class="overlay">
+  <div class="winCard">
+    <h2>¡Ganaste!</h2>
+    <div id="winPrize" class="prizePill">—</div>
+    <button onclick="closeWinner()">OK</button>
+  </div>
+</div>
+
+<script>
+  /* ✅ Mogul 8 de cada 10 */
+  const PRIZE_POOL = [
+    { label: "1 HELADO MOGUL",   weight: 80 },
+    { label: "1 COCA COLA 1L",   weight: 10 },
+    { label: "1 HELADO ROCKLET", weight: 10 },
+  ];
+
+  const WHEEL_SEGMENTS = ["❓","🎁","❓","🍀","❓","🎉","❓","⭐"];
+
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+
+  const centerSpin = document.getElementById("centerSpin");
+  const overlay = document.getElementById("overlay");
+  const winPrize = document.getElementById("winPrize");
+  const confettiBox = document.getElementById("confettiBox");
+  const dailyLock = document.getElementById("dailyLock");
+
+  let rotation = 0;
+  let spinning = false;
+
+  const LS_LAST_SPIN_DAY = "sm_ruleta_last_spin_day";
+  const LS_TODAY_PRIZE   = "sm_ruleta_today_prize";
+
+  function todayKey(){
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  }
+
+  function hasSpunToday(){
+    return localStorage.getItem(LS_LAST_SPIN_DAY) === todayKey();
+  }
+
+  function pickWeightedPrize(){
+    const total = PRIZE_POOL.reduce((s,p)=>s+p.weight,0);
+    let r = Math.random()*total;
+    for(const p of PRIZE_POOL){
+      r -= p.weight;
+      if(r <= 0) return p.label;
+    }
+  }
+
+  function drawWheel(){
+    const r = canvas.width/2;
+    const slice = (Math.PI*2)/WHEEL_SEGMENTS.length;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.save();
+    ctx.translate(r,r);
+    ctx.rotate(rotation);
+
+    for(let i=0;i<WHEEL_SEGMENTS.length;i++){
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.arc(0,0,r-10,i*slice,(i+1)*slice);
+      ctx.fillStyle = ["#e10600","#ffd200","#ffffff"][i%3];
+      ctx.fill();
+
+      ctx.save();
+      ctx.rotate(i*slice+slice/2);
+      ctx.font="60px system-ui";
+      ctx.textAlign="right";
+      ctx.fillText(WHEEL_SEGMENTS[i], r-60, 0);
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  function launchConfetti(){
+    confettiBox.innerHTML="";
+    const colors=["#e10600","#ffd200","#ffffff"];
+
+    for(let i=0;i<55;i++){
+      const c=document.createElement("span");
+      c.style.left=(Math.random()*100)+"%";
+      c.style.background=colors[Math.floor(Math.random()*3)];
+      c.style.width=(8+Math.random()*8)+"px";
+      c.style.height=(10+Math.random()*12)+"px";
+      confettiBox.appendChild(c);
+    }
+
+    setTimeout(()=>confettiBox.innerHTML="",2100);
+  }
+
+  function spin(){
+    if(hasSpunToday() || spinning) return;
+
+    spinning=true;
+    centerSpin.disabled=true;
+
+    const duration=4200;
+    const start=performance.now();
+
+    const visualIndex=Math.floor(Math.random()*WHEEL_SEGMENTS.length);
+    const slice=(Math.PI*2)/WHEEL_SEGMENTS.length;
+
+    const target=(Math.PI*2)*6+(Math.PI*2)-(visualIndex*slice+slice/2);
+    const startRot=rotation;
+    const delta=target-(startRot%(Math.PI*2));
+
+    function frame(now){
+      const t=Math.min(1,(now-start)/duration);
+      rotation=startRot+delta*(1-Math.pow(1-t,3));
+      drawWheel();
+
+      if(t<1) requestAnimationFrame(frame);
+      else{
+        spinning=false;
+
+        const prize=pickWeightedPrize();
+        localStorage.setItem(LS_LAST_SPIN_DAY,todayKey());
+        localStorage.setItem(LS_TODAY_PRIZE,prize);
+
+        winPrize.textContent=prize;
+        overlay.classList.add("show");
+        launchConfetti();
+        dailyLock.classList.add("show");
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function closeWinner(){
+    overlay.classList.remove("show");
+  }
+
+  centerSpin.addEventListener("click",spin);
+
+  drawWheel();
+
+  if(hasSpunToday()) dailyLock.classList.add("show");
+</script>
+</body>
+</html>
