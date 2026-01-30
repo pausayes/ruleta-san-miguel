@@ -162,38 +162,46 @@
       opacity:.9;
     }
 
-   /* ✅ Proporciones premium + ruleta SIEMPRE circular */
+/* ✅ PERFECTO en TODOS los celulares (misma proporción para aro/luces/cara) */
 .wheelWrap{
-  /* fuerza cuadrado real (mejor que depender solo de aspect-ratio en iPhone) */
   width: min(92vw, var(--wheelSize));
-  height: min(92vw, var(--wheelSize));
-  aspect-ratio: 1 / 1;
-  position:relative;
+  height: min(92vw, var(--wheelSize));   /* fuerza cuadrado real */
+  max-height: 52svh;
+  max-width: 92vw;
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;                      /* ✅ recorta TODO al mismo círculo */
   filter: drop-shadow(0 22px 40px rgba(0,0,0,.28));
 }
 
-/* control fino de proporciones */
-.wheelWrap{
-  --rim: 14px;      /* grosor del borde/aro */
-  --face: 14px;     /* cuánto “entra” el canvas */
-  --bulb: 8px;      /* cuánto “entran” las luces */
+/* fallback por si un navegador no soporta svh */
+@supports not (height: 1svh){
+  .wheelWrap{ max-height: 52vh; }
 }
 
-/* aro dorado/borde */
+/* Ajuste fino (estos 3 valores dejan “premium” perfecto) */
+.wheelWrap{
+  --rim: 12px;     /* grosor aro dorado */
+  --bulbInset: 8px;/* luces un poquito adentro */
+  --faceInset: 10px;/* cara (canvas) casi al borde */
+}
+
+/* aro dorado */
 .ring{
   position:absolute; inset:0;
   border-radius:50%;
+  pointer-events:none;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 56%, rgba(0,0,0,.12) 57%, rgba(0,0,0,.0) 63%),
-    radial-gradient(circle at 50% 50%, rgba(255,210,0,.0) 63%, rgba(255,210,0,.85) 64%, rgba(255,210,0,.85) 69%, rgba(0,0,0,.0) 70%),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,.95) 0 55%, rgba(255,255,255,0) 56%);
-  /* antes estaba muy grueso y “se comía” la ruleta */
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 57%, rgba(0,0,0,.12) 58%, rgba(0,0,0,0) 64%),
+    radial-gradient(circle at 50% 50%, rgba(255,210,0,0) 64%, rgba(255,210,0,.90) 65%, rgba(255,210,0,.90) 70%, rgba(0,0,0,0) 71%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.95) 0 56%, rgba(255,255,255,0) 57%);
   box-shadow: inset 0 0 0 var(--rim) rgba(255,210,0,.42);
 }
 
 /* luces */
 .bulbs{
-  position:absolute; inset: var(--bulb);
+  position:absolute;
+  inset: var(--bulbInset);
   border-radius:50%;
   pointer-events:none;
   background:
@@ -206,15 +214,17 @@
   filter: blur(.2px);
 }
 
-/* cara/segmentos (canvas) */
+/* cara/segmentos */
 canvas{
   position:absolute;
-  inset: var(--face);
-  width: calc(100% - (var(--face) * 2));
-  height: calc(100% - (var(--face) * 2));
+  inset: var(--faceInset);
+  width: calc(100% - (var(--faceInset) * 2));
+  height: calc(100% - (var(--faceInset) * 2));
   border-radius: 50%;
+  display:block;
   background: transparent;
 }
+
 
 
     .centerButton{
@@ -716,5 +726,6 @@ canvas{
   </script>
 </body>
 </html>
+
 
 
